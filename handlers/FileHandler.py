@@ -32,6 +32,7 @@ class FileHandler(object):
     # @param path: the path of the file to be readed
     # @return: a list of string with all the lines, [] if error 
     def getLines(path):
+        f = None
         try:
             f = open(path, 'r')
             lines = f.readlines()
@@ -41,6 +42,8 @@ class FileHandler(object):
                 ret += [l.strip()]
             return ret
         except Exception as inst:
+            if f != None:
+                f.close()
             ErrorHandler.printError("handlefile.getLines", {"path": path}, inst)
             return []
     
@@ -48,6 +51,7 @@ class FileHandler(object):
     # @param path: the path of the file to be readed
     # @return: a list of string with all the lines, [] if error 
     def getGZLines(path):
+        f = None
         try:
             f = gzip.open(path, 'r')
             lines = f.readlines()
@@ -57,6 +61,8 @@ class FileHandler(object):
                 ret += [l.strip()+"\n"]
             return ret
         except Exception as inst:
+            if f != None:
+                f.close()
             ErrorHandler.printError("handlefile.getLines", {"path": path}, inst)
             return []
     
@@ -75,6 +81,7 @@ class FileHandler(object):
     # @param line: a string to append in a new line 
     # @return: True is success, False if don't
     def appendLine(path, line):
+        f = None
         try:
             FileHandler.ensureDir(path)
             f = open(path, 'a')
@@ -82,6 +89,8 @@ class FileHandler(object):
             f.close()
             return True
         except Exception as inst:
+            if f != None:
+                f.close()
             ErrorHandler.printError("handlefile.appendLine", {"path": path, "line":line}, inst)
             return False
     
@@ -90,6 +99,7 @@ class FileHandler(object):
     # @param lines: a list of strings to append in a new line 
     # @return: True is success, False if don't
     def appendLines(path, lines):
+        f = None
         try:
             FileHandler.ensureDir(path)
             f = open(path, 'a')
@@ -98,6 +108,8 @@ class FileHandler(object):
             f.close()
             return True
         except Exception as inst:
+            if f != None:
+                f.close()
             ErrorHandler.printError("handlefile.appendLines", {"path": path}, inst)
             return False
     
@@ -106,6 +118,7 @@ class FileHandler(object):
     # @param line: a string to write in a new line 
     # @return: True is success, False if don't
     def writeLine(path, line, addReturn = "\n"):
+        f = None
         try:
             FileHandler.ensureDir(path)
             f = open(path, 'w')
@@ -114,6 +127,8 @@ class FileHandler(object):
             return True
         except Exception as inst:
             ErrorHandler.printError("handlefile.writeLine", {"path": path, "line":line}, inst)
+            if f != None:
+                f.close()
             return False
     
     @staticmethod
@@ -121,6 +136,7 @@ class FileHandler(object):
     # @param line: a string to write in a new line 
     # @return: True is success, False if don't
     def writeLines(path, lines):
+        f = None
         try:
             FileHandler.ensureDir(path)
             f = open(path, 'w')
@@ -133,6 +149,8 @@ class FileHandler(object):
             os.chmod(path,0o755)
             return True
         except Exception as inst:
+            if f != None:
+                f.close()
             ErrorHandler.printError("handlefile.writeLines", {"path": path, "line":lines}, inst)
             return False
     

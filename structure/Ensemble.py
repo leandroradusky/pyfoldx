@@ -50,7 +50,7 @@ class Ensemble(object):
             if i==1: FileHandler.writeLine(path, "")
             line = "MODEL %s %s %s" % (self.codes[i-1], self.chains[i-1],i)
             FileHandler.appendLine(path, line)
-            FileHandler.appendLine(path, st.toPdb())
+            FileHandler.appendLines(path, st.toPdb())
             line = "ENDMDL"
             FileHandler.appendLine(path, line)
             i+=1
@@ -195,7 +195,7 @@ class uniprotEnsemble( Ensemble ):
         refChain = self.chains[0]
         refSeq = ref.getSequence(refChain)
         refOutPath = self.workingPath+refCode+refChain+".pdb"
-        FileHandler.writeLine(refOutPath, ref.toPdb())
+        FileHandler.writeLines(refOutPath, ref.toPdb())
         newCodes = []
         newFrames = []
         
@@ -205,7 +205,7 @@ class uniprotEnsemble( Ensemble ):
             stChain = self.chains[stPos]
             stSeq = ref.getSequence(self.chains[stPos])
             stOutPath = self.workingPath+stCode+stChain+".pdb"
-            FileHandler.writeLine(stOutPath, st.toPdb())
+            FileHandler.writeLines(stOutPath, st.toPdb())
             
             aligned, rms = align(stCode, stOutPath, stSeq, stChain, \
                                  refCode, refOutPath, refSeq, refChain, \
