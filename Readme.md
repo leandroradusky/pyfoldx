@@ -26,5 +26,3 @@ To be defined
 - TODO: [Including other structural and nonstructural features to improve energy predictions]()
 - TODO: [Parameterizing a molecule on the fly]()
 - TODO: [Generating a dataset of minimized structures]()
-- 
-
