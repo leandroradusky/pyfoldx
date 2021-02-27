@@ -1,6 +1,6 @@
-# pyFoldX: Python Bindings for FoldX software
+# pyFoldX: Python Bindings for FoldX
 
-Official binding of [FoldX](http://foldxsuite.crg.eu/) for Python programming language.
+Official bindings of [FoldX](http://foldxsuite.crg.eu/) for Python programming language.
 
 ## Dependencies
 
