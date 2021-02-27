@@ -7,7 +7,6 @@ Official binding of [FoldX](http://foldxsuite.crg.eu/) for Python programming la
 - Python >= 3.8
 - Linux or MacOS
 - NGLViewer (optional for molecule visualization)
-- FoldX lib (free for academic use under registration in [http://foldxsuite.crg.eu/](http://foldxsuite.crg.eu/))
 
 ## Installing
 
