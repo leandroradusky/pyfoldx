@@ -23,5 +23,5 @@ To be defined
 
 - TODO: [Assesing mutation accuracy]()
 - TODO: [Including other structural and nonstructural features to improve energy predictions]()
-- TODO: [Parameterizing a molecule on the fly]()
+- [Parameterizing a molecule on the fly](https://github.com/leandroradusky/pyFoldX/blob/master/notebooks/moleculeParameterization.ipynb)
 - TODO: [Generating a dataset of minimized structures]()
