@@ -25,7 +25,8 @@ class Residue(object):
         self.chain = chain
     
     def addAtom(self, atom):
-        self.atoms += [atom]
+        if atom not in self.atoms:
+            self.atoms += [atom]
     
     def getInPDBFormat(self):
         return "\n".join([a.getInPDBFormat(self.hetatm) for a in self.atoms])

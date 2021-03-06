@@ -14,6 +14,7 @@ import src.structure.Ensemble as Ensemble
 
 from _collections import defaultdict
 import pandas as pd
+import re
 
 PDB_PATH = '/data/pdb/divided/pdb/'
 
@@ -77,11 +78,11 @@ class Structure(object):
     
     def toPdb(self, chain=""):
         ret = []
-        for chain in self.data:
-            for res in sorted(self.data[chain].keys()):
-                for atom in self.data[chain][res].atoms:
-                    if chain != "" and atom.residue.chain != chain: continue
-                    ret.append(atom.getInPDBFormat(self.data[chain][res].hetatm))
+        for ch in self.data:
+            for res in sorted(self.data[ch].keys()):
+                if chain != "" and self.data[ch][res].chain != chain: continue
+                for atom in self.data[ch][res].atoms:
+                    ret.append(atom.getInPDBFormat(self.data[ch][res].hetatm))
         return ret
     
     def getSequence(self, chain):
@@ -118,26 +119,33 @@ class Structure(object):
         
         retDf = pyFoldX.getResiduesEnergy( self.toPdb(), considerWaters)
         
-        retDf.index = retDf.index.map(lambda x: (("000000"+x[3:])[-5:]) +"_"+ x[0:3])
+        firstDigit = lambda s: [int(i) for i in range(0, len(s)) if s[i].isdigit()][0]
+        firstPart = lambda x: x[firstDigit(x):]
+        secondPart = lambda x: x[0:firstDigit(x)]
+        
+        retDf.index = retDf.index.map(lambda x: (("000000"+firstPart(x))[-5:]) +"_"+ secondPart(x))
         retDf.sort_index(inplace=True)
         
         print( "Energy computed." )
         return retDf
         
-    def repair(self, fixResidues=[]):
+    def repair(self, fixResidues=[], verbose=True):
         
-        print( "Repairing structure..." )
+        if verbose:
+            print( "Repairing structure..." )
         
         ret = Structure(self.code+"_Rep", fromString=pyFoldX.repair(self.toPdb(), fixResidues))
         
-        print( "Structure repaired." )
+        if verbose:
+            print( "Structure repaired." )
         return ret
         
-    def mutate(self, mutations, numberOfRuns=1, terms=[], generateMutationsEnsemble=False):
+    def mutate(self, mutations, numberOfRuns=1, terms=[], generateMutationsEnsemble=False, verbose=True):
         '''
         :todo: implement several runs and keep the best
         '''
-        print( "Computing mutation(s) %s on target structure..." % mutations )
+        if verbose:
+            print( "Computing mutation(s) %s on target structure..." % mutations )
         
         # if generate mutated ensemble, generate empty ensembles to load
         if generateMutationsEnsemble:
@@ -163,10 +171,10 @@ class Structure(object):
                 trajWT.addFrame(self.code+"_"+ mutations.replace(",","_").replace(";","_"),
                                  "", Structure(self.code+"_"+ mutations.replace(",","_").replace(";","_"), fromString=mutModels[i][1].split("\n")))
                 
-                retDf.loc[self.code+"_"+str(i)] = ddGsDf.loc[i]
+        retDf.loc[self.code+"_"+str(i)] = ddGsDf.loc[i]
         
-        
-        print( "Energy computed." )
+        if verbose:
+            print( "Energy computed." )
         return retDf, trajMut, trajWT
 
 if __name__ == "__main__":

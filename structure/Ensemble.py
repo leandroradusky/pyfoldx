@@ -13,6 +13,7 @@ from glob import glob
 import pandas as pd
 from tqdm import tqdm,trange
 import time
+import sys
 
 ##########################
 #### ENSEMBLE
@@ -76,7 +77,7 @@ class Ensemble(object):
             retDf = pd.DataFrame(columns=pyFoldX.ENERGY_TERMS)
             terms=pyFoldX.ENERGY_TERMS
         
-        for i in trange(len(self.frames)):
+        for i in trange(len(self.frames), file=sys.stdout):
             retDf.loc[self.codes[i]+"_"+self.chains[i]] = \
                   pyFoldX.getTotalEnergy(self.codes[i]+"_"+self.chains[i], self.frames[i].toPdb(), considerWaters)[terms].loc[self.codes[i]+"_"+self.chains[i]] 
 
@@ -90,11 +91,15 @@ class Ensemble(object):
         columns = [self.codes[i]+"_"+self.chains[i] for i in range(len(self.codes))]
         retDf = pd.DataFrame(columns=columns)
         
-        for i in trange(len(self.frames)):
+        for i in trange(len(self.frames), file=sys.stdout):
             retDf[self.codes[i]+"_"+self.chains[i]] = \
                   pyFoldX.getResiduesEnergy( self.frames[i].toPdb(), considerWaters)["total"]
         
-        retDf.index = retDf.index.map(lambda x: (("000000"+x[3:])[-5:]) +"_"+ x[0:3])
+        firstDigit = lambda s: [int(i) for i in range(0, len(s)) if s[i].isdigit()][0]
+        firstPart = lambda x: x[firstDigit(x):]
+        secondPart = lambda x: x[0:firstDigit(x)]
+        
+        retDf.index = retDf.index.map(lambda x: (("000000"+firstPart(x))[-5:]) +"_"+ secondPart(x))
         retDf.sort_index(inplace=True)
         
         print( "Energy computed." )
@@ -120,7 +125,7 @@ class Ensemble(object):
             retDf = pd.DataFrame(columns=pyFoldX.ENERGY_TERMS)
             terms=pyFoldX.ENERGY_TERMS
         
-        for i in trange(len(self.frames)):
+        for i in trange(len(self.frames), file=sys.stdout):
             
             #Add chain to each mutation
             finalMutChain = ""
@@ -148,7 +153,25 @@ class Ensemble(object):
         
         print( "Mutations computed." )
         return retDf, trajMut, trajWT
-
+    
+    def repair(self, fixResidues=[], inPlace=True):
+        '''
+        :param: fixResdiues: list of residues to don't move during Repair.
+        :param: if inPlace, original structures are overwritten, if not, a new ensemble is returned
+        '''
+        print( "Repairing structures along ensemble..." )
+        
+        ret = None
+        for i in trange(len(self.frames), file=sys.stdout):
+            repSt = self.frames[i].repair(verbose=False)
+            
+            if inPlace:
+                self.frames[i] = repSt
+            else:
+                ret.addFrame(self.codes[i]+"_Rep", self.chains[i], repSt)
+                
+        print( "Structures repaired." )
+        return ret
     
 ##########################
 #### UNIPROT ENSEMBLE
@@ -199,7 +222,7 @@ class uniprotEnsemble( Ensemble ):
         newCodes = []
         newFrames = []
         
-        for stPos in range(1,len(self.codes)):
+        for stPos in trange(1,len(self.codes), file=sys.stdout):
             stCode = self.codes[stPos]
             st = Structure.Structure(stCode)
             stChain = self.chains[stPos]
@@ -217,9 +240,6 @@ class uniprotEnsemble( Ensemble ):
                 newCodes.append(stCode)
                 newFrames.append(newSt)
                 
-            print("%s..." % (stPos), end='', flush=True)
-            if stPos%5==0:print("of %s structures processed" % len(self.codes))
-            
         self.frames = [z for _,z in sorted(zip(self.rmsd, newFrames))]
         self.codes = [z for _,z in sorted(zip(self.rmsd,newCodes))]
         self.rmsd = sorted(self.rmsd)
@@ -254,7 +274,7 @@ class pdbFlexEnsemble( Ensemble ):
         stTempl = Structure.Structure(self.code, pTempl)
         
         j=0
-        for c, frame in zip(self.codes, self.frames):
+        for c, frame in tqdm(zip(self.codes, self.frames), file=sys.stdout):
             j+=1
             
             p = self.workingPath+c+".pdb"
@@ -270,12 +290,10 @@ class pdbFlexEnsemble( Ensemble ):
                 newFrames.append(newSt)
                 newChains.append(c[-1])
                 
-            print("%s..." % (j), end='', flush=True)
-            if j%10==0:print()
             
-        self.frames = [z for _,z in sorted(zip(self.rmsd, newFrames))]
-        self.codes = [z for _,z in sorted(zip(self.rmsd,newCodes))]
-        self.chains = [z for _,z in sorted(zip(self.rmsd,newChains))]
+        self.frames = [z for _,z in sorted(zip(self.rmsd, newFrames), key=lambda pair: pair[0])]
+        self.codes = [z for _,z in sorted(zip(self.rmsd,newCodes), key=lambda pair: pair[0])]
+        self.chains = [z for _,z in sorted(zip(self.rmsd,newChains), key=lambda pair: pair[0])]
         self.rmsd = sorted(self.rmsd)
         
         print("Ensemble built")
@@ -283,11 +301,8 @@ class pdbFlexEnsemble( Ensemble ):
     def _processConfigurations(self):
         pdbs = glob("%s/*.pdb" % self.path)
         print( "Processing configurations (total: %s)" % (len(pdbs)) )
-        print( "Processed: " )
-        j=0
-        for pdb in pdbs:
-            j+=1
-            
+
+        for pdb in tqdm(pdbs, file=sys.stdout):
             stTempl = Structure.Structure(pdb, pdb)
             newPdb = pdb.split("/")[-1].split(".")[0][0:4]
             chain = pdb.split("/")[-1].split(".")[0][4]
@@ -295,7 +310,7 @@ class pdbFlexEnsemble( Ensemble ):
             except: continue
             
             outPath = self.workingPath+newPdb+chain+".pdb"
-            FileHandler.writeLine(outPath, st.toPdb())
+            FileHandler.writeLines(outPath, st.toPdb())
             
             seq1 = st.getSequence(chain)
             seq2 = stTempl.getSequence(chain)
@@ -305,23 +320,20 @@ class pdbFlexEnsemble( Ensemble ):
                 self.frames.append(newSt)
                 self.codes.append(newPdb+chain)
             
-            print("%s..." % (j), end='', flush=True)
-            if j%10==0:print()
-            
         print("Configurations processed")
 
 if __name__ == "__main__":
     
     print("started")
-    '''
-    code = "4k81B"
-    sampleTraj = "/home/lradusky/Downloads/%s/" % code
-    outTraj = "/home/lradusky/Downloads/outputTraj/"
     
-    t = pdbFlexEnsemble(code, outTraj, sampleTraj)
+    pdbFlexCode = "4ht3A"
+    pdbFlexPath = "/home/lradusky/Downloads/%s/" % pdbFlexCode 
+    outPath = "/home/lradusky/Downloads/outputTraj/"
+    
+    t = pdbFlexEnsemble(pdbFlexCode, outPath, pdbFlexPath)
     print( t.rmsd )
-    t.saveToPDB(outTraj+"traj.pdb")
-    t.mutate(t.getModel().data["B"][22], "V")
+    t.saveToPDB(outPath+"%s_traj.pdb" % pdbFlexCode)
+
     '''
     outTraj = "/home/lradusky/Downloads/P01112/"
     t = uniprotEnsemble("P01112", outTraj,justXray=True,maxResolution=1.6)
@@ -340,6 +352,15 @@ if __name__ == "__main__":
     totalEnergyDf = t.getTotalEnergy()
     residuesEnergyDf = t.getResiduesEnergy()
     print( residuesEnergyDf )
+    '''
+    
+    '''
+    outTraj = "/home/lradusky/Downloads/P01112/"
+    inTraj = "/home/lradusky/Downloads/P01112/ensemble.pdb"
+    t = uniprotEnsemble("P01112", outTraj,justXray=True,maxResolution=1.3)
+    t.repair()
+    t.saveToPDB(outTraj+"repaired.pdb")
+    '''
     
     print("done")
     

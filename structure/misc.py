@@ -91,7 +91,6 @@ def lcs(S,T):
 
 
 import os
-import sys
 import threading
 import time
 
@@ -169,3 +168,9 @@ class OutputGrabber(object):
                 break
             self.capturedtext += char
     
+def in_notebook():
+    """
+    Returns True if the module is running in IPython kernel,
+    False if in IPython shell or other Python shell.
+    """
+    return 'ipykernel' in sys.modules
