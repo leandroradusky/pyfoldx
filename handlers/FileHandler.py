@@ -5,33 +5,41 @@ Created on Mar 25, 2013
 @summary: this class allows user to interact with files
 '''
 
-import gzip
-import os.path, os
-from src.handlers.ErrorHandler import ErrorHandler
-from src.handlers.SystemHandler import SystemHandler
+import gzip, os
+from pyfoldx.handlers.SystemHandler import SystemHandler
 
 
 class FileHandler(object):
     '''
-    classdocs
+    Statatic methods to work with files in a friendly manner.
     '''
     
     def __init__(self):
         '''
-        Constructor
+        Constructor: this is a class of static methods.
         '''
     
     @staticmethod
     def fileExists(path):
+        '''
+        Check if a file exists.
+        
+        :param path: The file or folder to check if exists.
+        :return: True if the file or folder exists. 
+        '''
         try:
             with open(path): return True
         except IOError:
             return False
     
     @staticmethod
-    # @param path: the path of the file to be readed
-    # @return: a list of string with all the lines, [] if error 
     def getLines(path):
+        '''
+        Get lines of a file.
+        
+        :param path: the path of the file to be read.
+        :return: a list of string with all the lines, [] if error 
+        '''
         f = None
         try:
             f = open(path, 'r')
@@ -44,13 +52,16 @@ class FileHandler(object):
         except Exception as inst:
             if f != None:
                 f.close()
-            ErrorHandler.printError("handlefile.getLines", {"path": path}, inst)
             return []
     
     @staticmethod
-    # @param path: the path of the file to be readed
-    # @return: a list of string with all the lines, [] if error 
     def getGZLines(path):
+        '''
+        Get lines of a gzipped file.
+        
+        :param path: the path of the file to be read.
+        :return: a list of string with all the lines, [] if error 
+        '''
         f = None
         try:
             f = gzip.open(path, 'r')
@@ -63,24 +74,30 @@ class FileHandler(object):
         except Exception as inst:
             if f != None:
                 f.close()
-            ErrorHandler.printError("handlefile.getLines", {"path": path}, inst)
             return []
     
     @staticmethod
-    # @param path: the path of the file to be readed
-    # @return: a string with the file 
     def getString(path):
+        '''
+        Get string with the contents of a file.
+        
+        :param path: the path of the file to be read.
+        :return: a string with all the contents of a file, "" if error 
+        '''
         try:
             return "\n".join(FileHandler.getLines(path))
         except Exception as inst:
-            ErrorHandler.printError("handlefile.getString", {"path": path,}, inst)
             return ""
 
     @staticmethod
-    # @param path: the path of the file where the line will be appended
-    # @param line: a string to append in a new line 
-    # @return: True is success, False if don't
     def appendLine(path, line):
+        '''
+        Append a line to a file.
+        
+        :param path: the path of the file where the line will be appended
+        :param line: a string to append in a new line 
+        :return: True is success, False if don't
+        '''
         f = None
         try:
             FileHandler.ensureDir(path)
@@ -91,7 +108,6 @@ class FileHandler(object):
         except Exception as inst:
             if f != None:
                 f.close()
-            ErrorHandler.printError("handlefile.appendLine", {"path": path, "line":line}, inst)
             return False
     
     @staticmethod
@@ -99,6 +115,13 @@ class FileHandler(object):
     # @param lines: a list of strings to append in a new line 
     # @return: True is success, False if don't
     def appendLines(path, lines):
+        '''
+        Append a list of lines to a file.
+        
+        :param path: the path of the file where the line will be appended
+        :param lines: a list of strings to append in a new line 
+        :return: True is success, False if don't
+        '''
         f = None
         try:
             FileHandler.ensureDir(path)
@@ -110,14 +133,17 @@ class FileHandler(object):
         except Exception as inst:
             if f != None:
                 f.close()
-            ErrorHandler.printError("handlefile.appendLines", {"path": path}, inst)
             return False
     
     @staticmethod
-    # @param path: the path of the file where the line will be written
-    # @param line: a string to write in a new line 
-    # @return: True is success, False if don't
     def writeLine(path, line, addReturn = "\n"):
+        '''
+        Write a line into a file.
+        
+        :param path: the path of the file where the line will be appended
+        :param line: a string to append in a new line 
+        :return: True is success, False if don't
+        '''
         f = None
         try:
             FileHandler.ensureDir(path)
@@ -126,16 +152,19 @@ class FileHandler(object):
             f.close()
             return True
         except Exception as inst:
-            ErrorHandler.printError("handlefile.writeLine", {"path": path, "line":line}, inst)
             if f != None:
                 f.close()
             return False
     
     @staticmethod
-    # @param path: the path of the file where the line will be written
-    # @param line: a string to write in a new line 
-    # @return: True is success, False if don't
     def writeLines(path, lines):
+        '''
+        Write a list of lines to a file.
+        
+        :param path: the path of the file where the line will be appended
+        :param lines: a list of strings to append in a new line 
+        :return: True is success, False if don't
+        '''
         f = None
         try:
             FileHandler.ensureDir(path)
@@ -151,13 +180,16 @@ class FileHandler(object):
         except Exception as inst:
             if f != None:
                 f.close()
-            ErrorHandler.printError("handlefile.writeLines", {"path": path, "line":lines}, inst)
             return False
     
     @staticmethod
-    # @param path: the dir to make if not exist
-    # @summary: make dir if not exists 
     def ensureDir(path):
+        '''
+        Ensure the existance of a directory.
+        
+        :param path: the dir to make if not exist
+        :summary: make dir if not exists 
+        '''
         d = os.path.dirname(path)
         if not os.path.exists(d):
             os.makedirs(d)
@@ -165,9 +197,17 @@ class FileHandler(object):
         return d
     
     @staticmethod
-    # @param path: the dir to make if not exist
-    # @summary: make dir if not exists 
     def exists(path):
+        '''
+        Check the existance of a file or directory.
+        
+        :param path: the dir or file to check if exist
+        :return: True if exists, false otherwise
+        '''
         return os.path.exists(path)
     
     
+    
+    
+
+

@@ -2,7 +2,6 @@
 Created on Nov 2, 2020
 @author: lradusky
 '''
-from src.handlers.FileHandler import FileHandler
 
 def parsePdbFile(lines, struct):
     

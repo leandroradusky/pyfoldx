@@ -2,11 +2,8 @@
 Created on Jul 12, 2013
 @author: leandro
 '''
-from src.handlers.FileHandler import FileHandler
-from src.handlers.SystemHandler import SystemHandler
-
-import urllib
-
+from pyfoldx.handlers.FileHandler import FileHandler
+from pyfoldx.handlers.SystemHandler import SystemHandler
 PROXY = ""
 
 class URLRetrieveHandler(object):

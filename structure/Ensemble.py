@@ -1,18 +1,18 @@
 '''
 Created on Nov 2, 2020
+
 @author: lradusky
 '''
 
-from src.handlers.FileHandler import FileHandler
-import src.structure.Structure as Structure
-from src.structure.misc import align
-from src.handlers.Uniprot import Orf
-from src.pyFoldX import pyFoldX
+from pyfoldx.handlers.FileHandler import FileHandler
+import pyfoldx.structure.Structure as Structure
+from pyfoldx.structure.misc import align
+from pyfoldx.handlers.Uniprot import Orf
+from pyfoldx.foldx import foldx
 
 from glob import glob
 import pandas as pd
 from tqdm import tqdm,trange
-import time
 import sys
 
 ##########################
@@ -20,32 +20,52 @@ import sys
 ##########################
 
 class Ensemble(object):
-
-    def __init__(self, code, workingPath,ensembleFile=""):
+    '''
+    Class representing ensembles of structures (multiple models)
+    
+    :ivar frames: list of structure objects.
+    :ivar codes: list of codes of the structure objects.
+    :ivar chains: list of chains of the structure objects.
+    :ivar workingPath: temporary path to download and align structures.
+    :ivar code: name of the ensemble.
+    '''
+    
+    def __init__(self, code, working_path, ensemble_file=""):
+        '''
+        Constructor of an ensemble. 
+        
+        :param code: Code of the ensemble, just for naming purposes.
+        :param working_path: Temporary path to download and align structures.
+        :param ensemble_file: (Optional) If specified, each model of the provided PDB path will be one frame of the ensemble.
+        '''
         
         self.frames = []
         self.codes=[]
-        self.rmsd=[]
         self.chains = []
-        self.workingPath = workingPath
+        self.workingPath = working_path
         self.code = code
 
-        if ensembleFile != "":
+        if ensemble_file != "":
             # if its specified a ensembleFile load it
             frameLines=[]
-            for line in FileHandler.getLines(ensembleFile):
+            for line in FileHandler.getLines(ensemble_file):
                 if line.find("MODEL") != -1:
                     dummy, code, chain, num = line.split(" ")
                     self.codes.append(code)
                     self.chains.append(chain)
                     frameLines = []
                 elif line.find("ENDMDL") != -1:
-                    self.frames.append(Structure.Structure(code+chain, fromString = frameLines))
+                    self.frames.append(Structure.Structure(code+chain, from_string = frameLines))
                     frameLines = []
                 else:
                     frameLines.append(line)
     
     def saveToPDB(self, path):
+        '''
+        Save ensemble to PDB file
+        
+        :param path: filename where to save the ensemble.
+        '''
         i=1
         for st in self.frames:
             if i==1: FileHandler.writeLine(path, "")
@@ -57,35 +77,61 @@ class Ensemble(object):
             i+=1
         
     def addFrame(self,code,chain,struct):
+        '''
+        Append a frame to an ensemble.
+        
+        :param code: Code of the frame to append.
+        :param chain: Chain of the frame to append.
+        :param struct: Structure object to append.
+        '''
         self.codes.append(code)
         self.chains.append(chain)
         self.frames.append(struct)
     
     def getFrame(self,number=0):
+        '''
+        Get a frame of the ensemble.
+        
+        :param number: Number of frame to be returned.
+        :return: Structure object in the position of the requested frame.
+        '''
         if len(self.frames) >= number: return None
         else: return self.frames[number]
     
     ##################
     # FoldX Operations
     ##################
-    def getTotalEnergy(self, terms=[],considerWaters=False):
+    def getTotalEnergy(self, terms=[], consider_waters=False):
+        '''
+        Computes FoldX total energy for each frame of an ensemble.
+        
+        :param terms: List of energy terms to return, if not specified, all the energy terms will be returned.
+        :param consider_waters: If True, water molecules within the structure will be taken into account.
+        :return: Pandas DataFrame containing the energy terms computed for all structures.
+        '''
         
         print( "Computing total energy for ensemble..." )
         if terms != []:
             retDf = pd.DataFrame(columns=terms)
         else:
-            retDf = pd.DataFrame(columns=pyFoldX.ENERGY_TERMS)
-            terms=pyFoldX.ENERGY_TERMS
+            retDf = pd.DataFrame(columns=foldx.ENERGY_TERMS)
+            terms=foldx.ENERGY_TERMS
         
         for i in trange(len(self.frames), file=sys.stdout):
             retDf.loc[self.codes[i]+"_"+self.chains[i]] = \
-                  pyFoldX.getTotalEnergy(self.codes[i]+"_"+self.chains[i], self.frames[i].toPdb(), considerWaters)[terms].loc[self.codes[i]+"_"+self.chains[i]] 
+                  foldx.getTotalEnergy(self.codes[i]+"_"+self.chains[i], self.frames[i].toPdb(), consider_waters)[terms].loc[self.codes[i]+"_"+self.chains[i]] 
 
         
         print( "Energy computed." )
         return retDf
     
     def getResiduesEnergy(self, considerWaters=False):
+        '''
+        Computes FoldX energy for all the residues within each frame of an ensemble object.
+        
+        :param consider_waters: If True, water molecules within the structure will be taken into account.
+        :return: Pandas DataFrame containing total energy of residues as index and structures as columns.
+        '''
         
         print( "Computing residue energy for ensemble..." )
         columns = [self.codes[i]+"_"+self.chains[i] for i in range(len(self.codes))]
@@ -93,7 +139,7 @@ class Ensemble(object):
         
         for i in trange(len(self.frames), file=sys.stdout):
             retDf[self.codes[i]+"_"+self.chains[i]] = \
-                  pyFoldX.getResiduesEnergy( self.frames[i].toPdb(), considerWaters)["total"]
+                  foldx.getResiduesEnergy( self.frames[i].toPdb(), considerWaters)["total"]
         
         firstDigit = lambda s: [int(i) for i in range(0, len(s)) if s[i].isdigit()][0]
         firstPart = lambda x: x[firstDigit(x):]
@@ -105,14 +151,20 @@ class Ensemble(object):
         print( "Energy computed." )
         return retDf
         
-    def mutate(self, mutations, terms=[], generateMutationsEnsemble=False):
+    def mutate(self, mutations, terms=[], generate_mutations_ensemble=False):
         '''
-        :todo: implement several runs and keep the best
+        Generate mutated models with FoldX.
+        
+        :param mutations: List of mutations in FoldX format to be modeled.
+        :param terms: List of energy terms to return, if not specified, all the energy terms will be returned.
+        :param generate_mutations_ensemble: If True, an Ensemble object with the mutations and its wild types is returned.
+        :return: Tuple with DataFrame of the ddG of the generated models and ensemble of the mutations if this parameter its true.
         '''
+        
         print( "Computing mutation(s) %s along ensemble..." % mutations )
         
         # if generate mutated ensemble, generate empty ensembles to load
-        if generateMutationsEnsemble:
+        if generate_mutations_ensemble:
             trajMut = Ensemble(self.code+"_Mut",self.workingPath+"/%s_Mut/" % mutations.replace(",","_").replace(";","_"))
             trajWT = Ensemble(self.code+"_WT",self.workingPath+"/%s_WT/" % mutations.replace(",","_").replace(";","_"))
         else:
@@ -122,8 +174,8 @@ class Ensemble(object):
         if terms != []:
             retDf = pd.DataFrame(columns=terms)
         else:
-            retDf = pd.DataFrame(columns=pyFoldX.ENERGY_TERMS)
-            terms=pyFoldX.ENERGY_TERMS
+            retDf = pd.DataFrame(columns=foldx.ENERGY_TERMS)
+            terms=foldx.ENERGY_TERMS
         
         for i in trange(len(self.frames), file=sys.stdout):
             
@@ -134,17 +186,17 @@ class Ensemble(object):
             finalMutChain = finalMutChain[0:-1]+";"
             
             try:
-                ddGsDf, mutModels = pyFoldX.mutate(self.frames[i].toPdb(), finalMutChain, 1)
+                ddGsDf, mutModels = foldx.mutate(self.frames[i].toPdb(), finalMutChain, 1)
             except:
                 print(self.codes[i]+" failed")
                 continue
             
             # if generate mutated ensemble, add models to the ensemples
-            if generateMutationsEnsemble:
+            if generate_mutations_ensemble:
                 trajMut.addFrame(self.codes[i]+"_"+ mutations.replace(",","_"),
-                                 self.chains[i], Structure.Structure(self.codes[i]+"_"+ mutations.replace(",","_"), fromString=mutModels[0][0].split("\n")))
+                                 self.chains[i], Structure.Structure(self.codes[i]+"_"+ mutations.replace(",","_"), from_string=mutModels[0][0].split("\n")))
                 trajWT.addFrame(self.codes[i]+"_"+ mutations.replace(",","_"),
-                                 self.chains[i], Structure.Structure(self.codes[i]+"_"+ mutations.replace(",","_"), fromString=mutModels[0][1].split("\n")))
+                                 self.chains[i], Structure.Structure(self.codes[i]+"_"+ mutations.replace(",","_"), from_string=mutModels[0][1].split("\n")))
             
             retDf.loc[self.codes[i]+"_"+self.chains[i]] = ddGsDf.loc[0]
             
@@ -154,18 +206,21 @@ class Ensemble(object):
         print( "Mutations computed." )
         return retDf, trajMut, trajWT
     
-    def repair(self, fixResidues=[], inPlace=True):
+    def repair(self, fix_residues=[], in_place=True):
         '''
-        :param: fixResdiues: list of residues to don't move during Repair.
-        :param: if inPlace, original structures are overwritten, if not, a new ensemble is returned
+        Minimize and complete sidechains of all structures within an ensemble with FoldX.
+        
+        :param fix_residues: List of residues in FoldX format to be fixed during repair.
+        :param in_place: if true, frames are replaced within the ensemble and None is returned, otherwise a new ensemble is returned.
+        :return: Structure object with the repaired structure.
         '''
         print( "Repairing structures along ensemble..." )
         
         ret = None
         for i in trange(len(self.frames), file=sys.stdout):
-            repSt = self.frames[i].repair(verbose=False)
+            repSt = self.frames[i].repair(fix_residues=fix_residues, verbose=False)
             
-            if inPlace:
+            if in_place:
                 self.frames[i] = repSt
             else:
                 ret.addFrame(self.codes[i]+"_Rep", self.chains[i], repSt)
@@ -177,21 +232,36 @@ class Ensemble(object):
 #### UNIPROT ENSEMBLE
 ##########################
 
-class uniprotEnsemble( Ensemble ):
+class UniprotEnsemble( Ensemble ):
+    '''
+    Class representing ensembles of structures available for an Uniprot entry.
     
-    def __init__(self, code, workingPath, position=None, justXray=True, maxResolution=10):
-        super().__init__(code, workingPath)
+    Available structures will be automatically downloaded, aligned and renumbered (whenever is possible).
+    '''
+    
+    def __init__(self, code, working_path, position=None, just_xray=True, max_resolution=10):
+        '''
+        Constructor of an uniprot ensemble. 
+        
+        :param code: Uniprot accession of the ensemble to be created.
+        :param working_path: Temporary path to download and align structures.
+        :param position: (Optional) if specified, only structures containing the position will be retrieved.
+        :param just_xray: (Optional) if True, only x-ray structures will be taken into account.
+        :param max_resolution: (Optional) max resolution allowed for retrieved structures.
+        '''
+        
+        super().__init__(code, working_path)
         
         #Add crystals available, considering parameters
         pdbs=[]
         chains = []
-        p = Orf(code, replaceExistent=True)
+        p = Orf(code, replace_existent=True)
         for c in p.getCrystalsWithDetails():
             add = True
             for p in c.property:
-                if justXray and p.type == 'method' and p.value!='X-ray':
+                if just_xray and p.type == 'method' and p.value!='X-ray':
                     add=False
-                if justXray and p.type == 'resolution' and float(p.value)>maxResolution:
+                if just_xray and p.type == 'resolution' and float(p.value)>max_resolution:
                     add=False
                 if position != None and p.type == 'chains'\
                      and ( int(p.value.split("=")[1].split("-")[0]) > position  \
@@ -206,6 +276,7 @@ class uniprotEnsemble( Ensemble ):
                 
         self.codes=pdbs
         self.chains=chains
+        self.rmsd=[]
         
         # Download PDBs Align and make an ensemble
         # TODO: The first on the list will be the reference to align no
@@ -248,92 +319,10 @@ class uniprotEnsemble( Ensemble ):
         print("Total structures aligned: %s" % len(self.codes) )
         
 
-##########################
-#### PDBFLEX ENSEMBLE
-##########################
-
-class pdbFlexEnsemble( Ensemble ):
-    
-    def __init__(self, code, workingPath, path=""):
-        super().__init__(code, workingPath)
-        
-        self.path = path
-        self._processConfigurations()
-        self._buildEnsemble()
-    
-    def _buildEnsemble(self):
-        
-        newCodes = []
-        newChains= []
-        newFrames = []
-        
-        print( "MasterStructure is %s:" % self.code)
-        print( "Aligning to master (total: %s)" % (len(self.frames)) )
-        
-        pTempl =self.workingPath+self.code+".pdb"
-        stTempl = Structure.Structure(self.code, pTempl)
-        
-        j=0
-        for c, frame in tqdm(zip(self.codes, self.frames), file=sys.stdout):
-            j+=1
-            
-            p = self.workingPath+c+".pdb"
-            
-            seq1 = frame.getSequence(c[-1])
-            seq2 = stTempl.getSequence(self.code[-1])
-            
-            aligned, rms = align(c, p, seq1, c[-1], self.code, pTempl, seq2, self.code[-1], 1000)
-            if aligned:
-                newSt = Structure.Structure(c, p)
-                self.rmsd.append(rms)
-                newCodes.append(c)
-                newFrames.append(newSt)
-                newChains.append(c[-1])
-                
-            
-        self.frames = [z for _,z in sorted(zip(self.rmsd, newFrames), key=lambda pair: pair[0])]
-        self.codes = [z for _,z in sorted(zip(self.rmsd,newCodes), key=lambda pair: pair[0])]
-        self.chains = [z for _,z in sorted(zip(self.rmsd,newChains), key=lambda pair: pair[0])]
-        self.rmsd = sorted(self.rmsd)
-        
-        print("Ensemble built")
-    
-    def _processConfigurations(self):
-        pdbs = glob("%s/*.pdb" % self.path)
-        print( "Processing configurations (total: %s)" % (len(pdbs)) )
-
-        for pdb in tqdm(pdbs, file=sys.stdout):
-            stTempl = Structure.Structure(pdb, pdb)
-            newPdb = pdb.split("/")[-1].split(".")[0][0:4]
-            chain = pdb.split("/")[-1].split(".")[0][4]
-            try: st = Structure.Structure(newPdb)
-            except: continue
-            
-            outPath = self.workingPath+newPdb+chain+".pdb"
-            FileHandler.writeLines(outPath, st.toPdb())
-            
-            seq1 = st.getSequence(chain)
-            seq2 = stTempl.getSequence(chain)
-            
-            if align(newPdb, outPath, seq1, chain, pdb, pdb, seq2, chain)[0]:
-                newSt = Structure.Structure(newPdb+chain, outPath)
-                self.frames.append(newSt)
-                self.codes.append(newPdb+chain)
-            
-        print("Configurations processed")
-
 if __name__ == "__main__":
     
     print("started")
     
-    pdbFlexCode = "4ht3A"
-    pdbFlexPath = "/home/lradusky/Downloads/%s/" % pdbFlexCode 
-    outPath = "/home/lradusky/Downloads/outputTraj/"
-    
-    t = pdbFlexEnsemble(pdbFlexCode, outPath, pdbFlexPath)
-    print( t.rmsd )
-    t.saveToPDB(outPath+"%s_traj.pdb" % pdbFlexCode)
-
     '''
     outTraj = "/home/lradusky/Downloads/P01112/"
     t = uniprotEnsemble("P01112", outTraj,justXray=True,maxResolution=1.6)

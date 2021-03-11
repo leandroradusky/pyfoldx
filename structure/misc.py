@@ -1,14 +1,21 @@
 '''
 Created on Nov 8, 2020
 @author: lradusky
-@summary: miscelaneous util functions
+@summary: miscelaneous definitions and functions
 '''
 
-from src.handlers.SystemHandler import SystemHandler
+from pyfoldx.handlers.SystemHandler import SystemHandler
 import warnings
 import sys
 import Bio.PDB
-import traceback
+
+# TODO: parameterize this location.
+PDB_PATH = '/data/pdb/divided/pdb/'
+
+ThreeOne = {'ALA':'A','CYS':'C','ASP':'D','GLU':'E','PHE':'F'
+,'GLY':'G','HIS':'H','ILE':'I','LYS':'K','LEU':'L','MET':'M'
+,'ASN':'N','PRO':'P','GLN':'Q','ARG':'R','SER':'S','THR':'T'
+,'VAL':'V','TRP':'W','TYR':'Y'}
 
 # @summary: align two Structures
 def align(code1,file1,seq_str,chain1,code2,file2,use_str,chain2,maxRmsAllowed = 100):

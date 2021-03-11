@@ -5,55 +5,46 @@ Created on Mar 25, 2013
 @summary: this class allows user to interact with system command line
 '''
 
-from src.handlers.ErrorHandler import ErrorHandler
 import os
-import argparse
 
 class SystemHandler(object):
     '''
-    classdocs
+    Statatic methods to work with the system in a friendly manner.
     '''
 
     def __init__(self):
         '''
-        Constructor
+        Constructor: this is a class of static methods.
         '''
         
     @staticmethod
-    # @param command: the command to be executed
-    # @return: a list of the lines returned by the command, [] if error
     def executeCommand(command):
+        '''
+        Execute a command.
+        
+        :param command: the command to be executed.
+        '''
         try:
             os.system(command)
         except Exception as inst:
-            ErrorHandler.printError(__name__, {"command": command}, inst)
+            pass
         
     @staticmethod
     # @param command: the command to be executed
     # @return: a list of the lines returned by the command, [] if error
-    def getCommandResult(command, stripLines = False):
+    def getCommandResult(command, strip_lines = False):
+        '''
+        Execute a command and return its output.
+        
+        :param command: the command to be executed.
+        :param strip_lines: split the output in a list of strings, one for each line.
+        :return: a list of the lines returned by the command, [] if error
+        '''
         try:
             lines = os.popen(command).readlines()
-            if stripLines:
+            if strip_lines:
                 lines = map(lambda x: x.strip(), lines)
         except Exception as inst:
-            ErrorHandler.printError(__name__, {"command": command}, inst)
+            pass
             return []
         return lines
-    
-    @staticmethod
-    # @param params: list of tuples with (name, desc) of each command line argument
-    # @return: object with each param as a member
-    def getCommandLineParameters(params):
-        try:
-            parser = argparse.ArgumentParser()
-            for param in params:
-                parser.add_argument(param[0], type=str,
-                                    help=param[1])
-            
-            args = parser.parse_args()
-            return args
-        except Exception as inst:
-            ErrorHandler.printError(__name__, {"params": params}, inst)
-            return None
-        
