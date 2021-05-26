@@ -12,21 +12,29 @@ Official bindings of [FoldX](http://foldxsuite.crg.eu/) for Python programming l
 
 0) Before start, a FoldX executable is needed by pyFoldX to function. You can obtain it for free upon registration [here](http://foldxsuite.crg.eu/). Once you have the  executable in your filesystem, add the following line to your .bashrc:
 
+    ```
     export FOLDX_BINARY=/your/path/to/foldx
+    ```
 
 1) Download the git codebase or clone this repository executing:
 
+    ```
 	git clone https://github.com/leandroradusky/pyFoldX.git
+    ```
 
 2) (optional) Create a virtual environment to install the tool:
 
+    ```
     vitualenv pyfoldx-env
     . pyfoldx-env/bin/activate
+    ```
 
 3) Install pyFoldx and its requirements:
 
+    ```
     cd pyfoldx
     python setup.py install
+    ```
 
 ## Basic tutorials
 
