@@ -32,7 +32,7 @@ Official bindings of [FoldX](http://foldxsuite.crg.eu/) for Python programming l
 3) Install pyFoldx and its requirements:
 
     ```
-    cd pyFoldX
+    cd pyfoldx
     python setup.py install
     ```
 
