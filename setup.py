@@ -25,6 +25,13 @@ setup(
     package_data={
         '': ['LICENSE', '*.md'],
     },
+    install_requires=[
+        'biopython',
+        'numpy',
+        'pandas',
+        'tqdm',
+        'lxml'
+    ],
     author="Leandro Radusky",
     author_email="leandro.radusky@gmail.com",
     description="Python Bindings for FoldX",

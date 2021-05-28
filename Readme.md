@@ -19,22 +19,24 @@ Official bindings of [FoldX](http://foldxsuite.crg.eu/) for Python programming l
 1) Download the git codebase or clone this repository executing:
 
     ```
-	git clone https://github.com/leandroradusky/pyFoldX.git
+	git clone https://github.com/leandroradusky/pyfoldx.git
     ```
 
 2) (optional) Create a virtual environment to install the tool:
 
     ```
-    vitualenv pyfoldx-env
+    virtualenv pyfoldx-env
     . pyfoldx-env/bin/activate
     ```
 
 3) Install pyFoldx and its requirements:
 
     ```
-    cd pyfoldx
+    cd pyFoldX
     python setup.py install
     ```
+
+Note: if you have several python versions within your system you may run the proper pip (i.e. pip3.8).
 
 ## Basic tutorials
 
