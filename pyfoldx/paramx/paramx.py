@@ -122,7 +122,7 @@ class JSonParameterLoader( object ):
     
     @staticmethod
     def loadTable(table):
-        lines = fileHandler.getLines(ROTABASE_PATH)
+        lines = FileHandler.getLines(ROTABASE_PATH)
         read = False
         
         json_lines=[]
@@ -241,7 +241,7 @@ class JSonMolecule( object ):
             return simplejson.dumps(retdict, indent="\t")
         else:
             #return foldxPM_Globals.fileHandler.writeLine(toFile,json.dumps(retdict, indent="\t"))
-            return fileHandler.writeLine(to_file,simplejson.dumps(retdict, indent="\t"))
+            return FileHandler.writeLine(to_file,simplejson.dumps(retdict, indent="\t"))
     
     @staticmethod
     def fromJson(file_path):
@@ -251,7 +251,7 @@ class JSonMolecule( object ):
         :param file_path: Path to the file to load the parameters from.
         :return: JSonMolecule object loaded from file.
         '''
-        loaded_dict = simplejson.loads("\n".join(fileHandler.getLines(file_path)))
+        loaded_dict = simplejson.loads("\n".join(FileHandler.getLines(file_path)))
         ret = JSonMolecule(loaded_dict["molName"])
         ret.molparams = loaded_dict["molParams"]
         ret.threeLetterCode = loaded_dict["molCode"]
@@ -299,7 +299,7 @@ class PdbMolecule( object ):
     def __init__(self, path="", fromString=""):
         
         if path != "":
-            self.lines = fileHandler.getLines(path)
+            self.lines = FileHandler.getLines(path)
         else:
             if fromString == "":
                 print("Error: Molecule needs to be created from path or string.")
@@ -360,11 +360,11 @@ class PdbMolecule( object ):
 
 def checkParameters(args):
     
-    if args.molfile == None or not fileHandler.fileExists(args.molfile):
+    if args.molfile == None or not FileHandler.fileExists(args.molfile):
         print( "PDB formatted molecule not provided or not found!" )
         return False
     
-    if args.list != None and not fileHandler.fileExists(args.list):
+    if args.list != None and not FileHandler.fileExists(args.list):
         print( "File with list of atoms not found!" )
         return False
     
@@ -429,7 +429,7 @@ def translateMappings(atom):
 def loadMappings(listfile):
     try:
         retDict = dict()
-        for line in fileHandler.getLines(listfile):
+        for line in FileHandler.getLines(listfile):
             fields = line.split()
             # Assign atom in this molecule (fields[0]) to known atom (fields[1]) of known molecule(fields[2])  
             retDict[fields[0]] = translateMappings(fields[1], fields[2])
@@ -569,7 +569,7 @@ if __name__ == "__main__":
             print( " Produced parameterized file:" )
             print( newMol.toJson() )
         else:
-            fileHandler.writeLines(args.outfile, newMol.toJson().split("\n"))
+            FileHandler.writeLines(args.outfile, newMol.toJson().split("\n"))
             print( "Parameterized JSON file successfully saved to %s" % args.outfile )
     print() 
     
