@@ -20,8 +20,9 @@ from setuptools import setup, find_packages
 setup(
     name="pyfoldx",
     version="0.1",
-    packages=['pyfoldx/foldx','pyfoldx/handlers','pyfoldx/paramx','pyfoldx/structure'],
-    python_requires=">=3.6",
+    packages=find_packages(where='pyfoldx'),
+    package_dir={"":"pyfoldx"},
+    python_requires=">=3.8",
     package_data={
         '': ['LICENSE', '*.md'],
     },
