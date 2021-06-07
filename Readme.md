@@ -1,13 +1,12 @@
-# pyFoldX: Python Bindings for FoldX
+# pyfoldx: Python Bindings for FoldX
 
 Official bindings of [FoldX](http://foldxsuite.crg.eu/) for Python programming language.
 
 ## Dependencies
 
-- Python >= 3.6
+- Python >= 3.8
 - Linux or MacOS
-- [Biopython](https://biopython.org/), [pandas](https://pandas.pydata.org/), [numpy](https://numpy.org/)
-
+  
 ## Installing
 
 1) Before start, a FoldX executable is needed by pyFoldX to function. You can obtain it for free upon registration [here](http://foldxsuite.crg.eu/). Once you have the  executable in your filesystem, add the following line to your .bashrc:
@@ -29,14 +28,13 @@ Official bindings of [FoldX](http://foldxsuite.crg.eu/) for Python programming l
     pip install pyfoldx
     ```
 
-Note: if you have several python versions within your system you may run the proper pip (i.e. pip3.8).
+Note: if you have several python versions within your system or environment, you should run the proper pip (i.e. pip3.8).
 
 ## Basic tutorials
 
 - [Working with PDB Structures](https://github.com/leandroradusky/pyFoldX/blob/master/notebooks/StructureUsage.ipynb)
 - [Working with Ensembles of structures](https://github.com/leandroradusky/pyFoldX/blob/master/notebooks/EnsembleStability.ipynb)
 - [Mapping mutations along Ensembles](https://github.com/leandroradusky/pyFoldX/blob/master/notebooks/EnsembleMutation.ipynb)
-- TODO: [Visualizing generated molecules in Jupyter notebooks]()
 
 ## Advanced tutorials
 

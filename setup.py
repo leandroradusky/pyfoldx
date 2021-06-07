@@ -19,7 +19,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="pyfoldx",
-    version="0.1",
+    version="0.1.4",
     packages=find_packages(where='pyfoldx'),
     package_dir={"":"pyfoldx"},
     python_requires=">=3.8",

@@ -41,9 +41,12 @@ class SystemHandler(object):
         :return: a list of the lines returned by the command, [] if error
         '''
         try:
-            lines = os.popen(command).readlines()
-            if strip_lines:
-                lines = map(lambda x: x.strip(), lines)
+            import warnings
+            with warnings.catch_warnings():
+                warnings.filterwarnings("ignore")
+                lines = os.popen(command).readlines()
+                if strip_lines:
+                    lines = map(lambda x: x.strip(), lines)
         except Exception as inst:
             pass
             return []

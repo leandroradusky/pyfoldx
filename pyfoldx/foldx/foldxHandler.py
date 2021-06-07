@@ -28,7 +28,7 @@ def getJobFolder():
     return "./.foldx_%s/" % jobid
 
 def checkFoldx():
-    if not FileHandler.fileExists(FOLDX_LOCATION):
+    if not FileHandler.fileExists(str(FOLDX_LOCATION)):
         print("FoldX executable not found, please set the variable FOLDX_LOCATION")
         exit(0)
     return True
