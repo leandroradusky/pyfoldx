@@ -9,15 +9,15 @@ from pyfoldx.handlers.fileHandler import FileHandler
 from pyfoldx.handlers.systemHandler import SystemHandler
 import pyfoldx.structure.structure as structure
 from pyfoldx.structure.misc import in_notebook, OutputGrabber
-from _collections import defaultdict
+from collections import defaultdict
 from datetime import datetime
-import os
+import os, sys
 
 ENERGY_TERMS = ['total','backHbond','sideHbond','energy_VdW','electro','energy_SolvP','energy_SolvH','energy_vdwclash',
                 'entrop_sc','entrop_mc','sloop_entropy','mloop_entropy','cis_bond','energy_torsion','backbone_vdwclash',
                 'energy_dipole','water','disulfide','energy_kon','partcov','energyIonisation','entr_complex']
 
-FOLDX_LOCATION = os.getenv('FOLDX_BINARY')
+FOLDX_LOCATION = os.getenv('FOLDX_BINARY', default="/usr/bin/foldx")
 
 def getJobFolder():
     '''
@@ -28,9 +28,10 @@ def getJobFolder():
     return "./.foldx_%s/" % jobid
 
 def checkFoldx():
-    if not FileHandler.fileExists(str(FOLDX_LOCATION)):
+    print("FOLDX_LOCATION",FOLDX_LOCATION)
+    if not FileHandler.fileExists(FOLDX_LOCATION):
         print("FoldX executable not found, please set the variable FOLDX_LOCATION")
-        exit(0)
+        sys.exit(0)
     return True
 
 def runFoldX(command,working_folder, pdb,other_parameters={}, working_with_rna=False, silent=True, consider_waters=False):
