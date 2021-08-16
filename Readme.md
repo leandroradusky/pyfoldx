@@ -34,7 +34,7 @@ Note: if you have several python versions within your system or environment, you
 
 - [Working with PDB Structures](https://github.com/leandroradusky/pyFoldX/blob/master/notebooks/StructureUsage.ipynb)
 - [Working with Ensembles of structures](https://github.com/leandroradusky/pyFoldX/blob/master/notebooks/EnsembleStability.ipynb)
-- [(temporarily down) Working with FoldX repaired structures.]()
+- (temporarily down) [Working with FoldX repaired structures.]()
 - [Mapping mutations along Ensembles](https://github.com/leandroradusky/pyFoldX/blob/master/notebooks/EnsembleMutation.ipynb)
 - [Parameterizing a molecule on the fly](https://github.com/leandroradusky/pyFoldX/blob/master/notebooks/paramX_AtomNames.ipynb)
 
@@ -44,9 +44,3 @@ Note: if you have several python versions within your system or environment, you
 - [Energetic and structural features computed on Missense3D-DB along protein ensembles.](https://github.com/leandroradusky/pyfoldx/blob/master/notebooks/data/ensembles_mutations_foldx.csv)
 - [New parameterized molecules.](https://github.com/leandroradusky/pyfoldx/tree/master/molecules)
 
-
-
-
-## Features under development
-
-- Molecule visualization using NGL
