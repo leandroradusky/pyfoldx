@@ -30,18 +30,22 @@ Official bindings of [FoldX](http://foldxsuite.crg.eu/) for Python programming l
 
 Note: if you have several python versions within your system or environment, you should run the proper pip (i.e. pip3.8).
 
-## Basic tutorials
+## Tutorials
 
 - [Working with PDB Structures](https://github.com/leandroradusky/pyFoldX/blob/master/notebooks/StructureUsage.ipynb)
 - [Working with Ensembles of structures](https://github.com/leandroradusky/pyFoldX/blob/master/notebooks/EnsembleStability.ipynb)
+- [(temporarily down) Working with FoldX repaired structures.]()
 - [Mapping mutations along Ensembles](https://github.com/leandroradusky/pyFoldX/blob/master/notebooks/EnsembleMutation.ipynb)
-
-## Advanced tutorials
-
-- TODO: [Assesing mutation accuracy]()
-- TODO: [Including other structural and nonstructural features to improve energy predictions]()
 - [Parameterizing a molecule on the fly](https://github.com/leandroradusky/pyFoldX/blob/master/notebooks/paramX_AtomNames.ipynb)
-- TODO: [Generating a dataset of minimized structures]()
+
+## Datasets & Resources
+
+- [Energetic and structural features computed on Missense3D-DB proposed best structure.](https://github.com/leandroradusky/pyfoldx/blob/master/notebooks/data/missense3d-benchmarking_PDBeKB_foldx.csv)
+- [Energetic and structural features computed on Missense3D-DB along protein ensembles.](https://github.com/leandroradusky/pyfoldx/blob/master/notebooks/data/ensembles_mutations_foldx.csv)
+- [New parameterized molecules.](https://github.com/leandroradusky/pyfoldx/tree/master/molecules)
+
+
+
 
 ## Features under development
 
